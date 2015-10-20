@@ -45,6 +45,9 @@ The default settings are the following :
         extInline: ['gif','png'],   // Extensions to inline
         maxInlineSize: 32 * 1024    // [kB] Inline as data uri images below specified size
                                     // (use 0 to disable, max 32k on ie8)
+    },
+    overrides: {
+
     }
 }
 ```
@@ -64,6 +67,9 @@ elixir(function(mix) {
         },
         js: {
             output: 'public/scripts'
+        },
+        overrides: {
+            "html5shiv": {"main": []}
         }
     });
 });

@@ -39,7 +39,8 @@ elixir.extend('bower', function (options) {
             output: (config.img && config.img.outputFolder) ? config.publicPath + '/' + config.img.outputFolder : config.publicPath + '/imgs',
             extInline: ['gif', 'png'],
             maxInlineSize: 32 * 1024 //max 32k on ie8
-        }
+        },
+        overrides: {}
     }, options);
 
     var files = [];
@@ -65,12 +66,15 @@ elixir.extend('bower', function (options) {
             this.emit('end');
         };
 
-        return gulp.src(mainBowerFiles({debugging: options.debugging}))
+        return gulp.src(mainBowerFiles({
+            debugging: options.debugging,
+            overrides: options.overrides
+        }))
             .on('error', onError)
             .pipe(filter('**/*.css'))
             .pipe(test(options.img.maxInlineSize > 0, base64({
                 extensions: options.img.extInline,
-                maxImageSize: options.img.maxInlineSize, // bytes 
+                maxImageSize: options.img.maxInlineSize, // bytes
                 debug: options.debugging,
             })))
             .pipe(concat(options.css.file))
@@ -98,7 +102,10 @@ elixir.extend('bower', function (options) {
             this.emit('end');
         };
 
-        return gulp.src(mainBowerFiles({debugging: options.debugging}))
+        return gulp.src(mainBowerFiles({
+            debugging: options.debugging,
+            overrides: options.overrides
+        }))
             .on('error', onError)
             .pipe(filter('**/*.js'))
             .pipe(concat(options.js.file))
@@ -112,9 +119,9 @@ elixir.extend('bower', function (options) {
             }));
 
     });
-    
+
     gulp.task('bower-fonts', function(){
-        
+
         var onError = function (err) {
 
             notify.onError({
@@ -126,11 +133,12 @@ elixir.extend('bower', function (options) {
 
             this.emit('end');
         };
-        
+
         return gulp.src(mainBowerFiles({
-                debugging: options.debugging,
-                filter: (/\.(eot|svg|ttf|woff|woff2|otf)$/i)
-            }))
+            debugging: options.debugging,
+            overrides: options.overrides,
+            filter: (/\.(eot|svg|ttf|woff|woff2|otf)$/i)
+        }))
             .on('error', onError)
             .pipe(changed(options.font.output))
             .pipe(gulp.dest(options.font.output))
@@ -157,22 +165,23 @@ elixir.extend('bower', function (options) {
         };
 
         var isInline = function (file) {
-            
+
             var filesize = file.stat ? getFileSize(file.stat.size) : getFileSize(Buffer.byteLength(String(file.contents)));
             var fileext = file.path.split('.').pop();
-            
+
             if (options.debugging)
             {
                 console.log("Size of file:" + file.path + " (" + 1024*parseFloat(filesize) +" / max="+options.img.maxInlineSize+")");
             }
-            
+
             return options.img.extInline.indexOf(fileext) > -1 && 1024*parseFloat(filesize) < options.img.maxInlineSize;
         }
 
         return gulp.src(mainBowerFiles({
             debugging: options.debugging,
+            overrides: options.overrides,
             filter: (/\.(png|bmp|gif|jpg|jpeg)$/i)
-            }))
+        }))
             .on('error', onError)
             .pipe(ignore.exclude(isInline)) // Exclude inlined images
             .pipe(changed(options.img.output))
